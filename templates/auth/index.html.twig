@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="position-relative h-100 w-100 d-flex">
+
+    <div class="m-auto header-card w-50 h-75 holo d-flex flex-column justify-content-between align-items-center position-relative">
+        <span class="corner-border-top"></span>
+
+        <!-- Boutons de sélection (onglets) -->
+        <div class="tab-buttons">
+            <button id="show-login" class="btn-tab active m-2">Login</button>
+            <button id="show-register" class="btn-tab m-2">Register</button>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <div class="col-lg-6 col-md-8 login-box" id="login-form">
+            <div class="col-lg-12 mt-3 text-center h1">LOGIN</div>
+            <div class="col-lg-12 login-form">
+                <form id="login-form" action="{{ path('app_login') }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-control-label">USERNAME</label>
+                        <input name="_username" type="text" class="w-100 rounded border-1 input-form holo">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">PASSWORD</label>
+                        <input name="_password" type="password" class="w-100 rounded border-1 input-form holo">
+                    </div>
+                    <div class="col-lg-12 loginbttm">
+                        <div class="col-lg-6 login-btm login-text"></div>
+                        <div class="col-lg-6 login-btm login-button">
+                            <button type="submit" class="btn-submit">LOGIN</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Formulaire d'inscription -->
+        <div class="col-lg-6 col-md-8 register-box d-none" id="register-form">
+            <div class="col-lg-12 mt-3 text-center h1">REGISTER</div>
+            <div class="col-lg-12 login-form">
+                <form id="register-form" action="{{ path('app_register') }}" method="POST">
+                    <div class="form-group mb-3">
+                        <label class="form-control-label">USERNAME</label>
+                        <input name="username" type="text" class="w-100 rounded border-1 input-form holo">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">PASSWORD</label>
+                        <input name="password" type="password" class="w-100 rounded border-1 input-form holo">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-control-label">CONFIRM PASSWORD</label>
+                        <input name="confirm_password" type="password" class="w-100 rounded border-1 input-form holo">
+                    </div>
+                    <div class="col-lg-12 loginbttm">
+                        <div class="col-lg-6 login-btm login-text"></div>
+                        <div class="col-lg-6 login-btm login-button">
+                            <button type="submit" class="btn-submit">REGISTER</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <span class="corner-border-bottom"></span>
+    </div>
+
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible position-fixed w-20 m-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+
+
+</div>
+
+<script>
+
+
+var loginBtn = document.getElementById("show-login");
+var registerBtn = document.getElementById("show-register");
+
+var loginForm = document.getElementById("login-form");
+var registerForm = document.getElementById("register-form");
+
+// toggle between login and register form
+loginBtn.addEventListener("click", function() {
+    registerBtn.classList.remove("active");
+    loginBtn.classList.add("active");
+
+    loginForm.classList.remove("d-none");
+    registerForm.classList.add("d-none");
+});
+registerBtn.addEventListener("click", function() {
+    loginBtn.classList.remove("active");
+    registerBtn.classList.add("active");
+
+    registerForm.classList.remove("d-none");
+    loginForm.classList.add("d-none");
+});
+
+// auto disable alerts
+setTimeout(function() {
+    document.querySelectorAll(".alert").forEach(alert => {
+        let bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 3000)
+
+
+</script>
+{% endblock %}

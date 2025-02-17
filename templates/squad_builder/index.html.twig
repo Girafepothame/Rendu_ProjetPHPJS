@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<div class="h-100 w-100 position-relative d-flex">
+    <div class="d-flex flex-grow-1 m-3 overflow-hidden">
+        <nav class="h-100 w-100 col-md-5 d-md-block holo header-card holo">
+            <a class="bg-transparent position-absolute p-2 m-2" style="color: rgba(245, 176, 66, 0.75); border: 1px solid rgba(245, 176, 66, 0.75); border-radius: 0.25em;" href="/">Retour</a>
+            <span class="corner-border-top"></span>
+            <div class="h-100 d-flex flex-column justify-content-between">
+                <div class="border-bottom">
+                    <h1 class="text-center p-3">Your squadrons</h1>
+                </div>
+                <div class="w-100 h-100 px-3 overflow-auto squadron-list" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    {% if squadrons is empty %}
+                        <div class="no-squadron text-center p-4">
+                            <p class="text-muted">Aucun squadron trouvé.</p>
+                        </div>
+                    {% else %}
+                        <div>
+                            {% for squadron in squadrons %}
+                            <div class="d-flex justify-content-between w-100">
+                                <div class="w-100 squadron-item d-flex align-items-center p-4 mb-2 squadron-{{ squadron.faction.id }}"
+                                    data-squadron-id="{{ squadron.id }}">
+                                    <div>
+                                        <span class="x-icon">{{ squadron.faction.icon }}</span>
+                                        <span class="ms-2">{{ squadron.name }}</span>
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger delete-squadron" data-squadron-id="{{ squadron.id }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button class="add-btn ms-auto mb-3 me-3" id="createSquadron">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <span class="corner-border-bottom"></span>
+        </nav>
+
+        <!-- Faction choice modal -->
+        <div class="modal" id="squadronModal" tabindex="-1" aria-labelledby="squadronModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content holo header-card">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Choisissez une faction</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex justify-content-center">
+                        <div class="d-flex gap-3">
+                            {% for faction in factions %}
+                                <button class="faction-btn btn btn-warning d-flex flex-column aligne-items-center justify-content-center" data-faction-id="{{ faction.id }}">
+                                    <span class="x-icon">{{ faction.icon }}</span>
+                                    <p class="text-center">{{ faction.name }}</p>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible position-fixed w-20 m-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<script>
+document.getElementById("createSquadron").addEventListener("click", function () {
+    // Show the modal for creating a new squadron
+    let squadronModal = new bootstrap.Modal(document.getElementById("squadronModal"));
+    squadronModal.show();
+});
+
+
+document.querySelectorAll(".faction-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        // Get the faction ID from the button's data attribute
+        let factionId = this.getAttribute("data-faction-id");
+        // Generate a random squadron name
+        let squadronName = "New Squadron" + Math.floor(Math.random() * 100);
+
+        // Create a FormData object to send the squadron data
+        let formData = new FormData();
+        formData.append("name", squadronName);
+        formData.append("faction", factionId);
+
+        // Send a POST request to create a new squadron
+        axios.post("{{ path('app_squadron_new') }}", formData)
+        .then(() => {
+            // Redirect to the squad builder page on success
+            window.location.href = "{{ path('app_squad_builder') }}";
+        })
+        .catch(error => console.error(error));
+    });
+});
+
+
+document.querySelectorAll('.delete-squadron').forEach(button => {
+    button.addEventListener('click', function () {
+        // Get the squadron ID from the button's data attribute
+        const squadronId = this.getAttribute('data-squadron-id');
+
+        // Confirm the deletion with the user
+        if (confirm("Voulez-vous vraiment supprimer ce squadron ?")) {
+            // Send a DELETE request to delete the squadron
+            axios.delete(`/squadron/${squadronId}`)
+                .then(() => window.location.reload()) // Reload the page on success
+                .catch(error => console.error("Erreur lors de la suppression :", error));
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+
+        {% block stylesheets %}
+            <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+            <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+            <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        {% endblock %}
+
+        {% block javascripts %}
+            <script src="https://kit.fontawesome.com/271c021c51.js" crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body class="d-flex flex-column vh-100">
+
+        <header class="pb-3" style="box-shadow: 0 2px 5px black;">
+            <div class="mx-3 mt-4">
+                <div class="col-12 d-flex align-items-center">
+                    <a class="icon-link ms-3" href="/">
+                        <img src="/assets/icons/logo/miniature.png" alt="Home">
+                        <span class="icon-text">Home</span>
+                    </a>
+
+                    <div class="text-center w-100 text-decoration-underline headline">
+                        Binary Deployment Squadron Manager
+                    </div>
+
+                    <a class="icon-link me-3" href="{% if app.user %}{{ path('app_profile') }}{% else %}{{ path('app_auth') }}{% endif %}">
+                        <img src="/assets/icons/profile/miniature.png" alt="Profile">
+                        <span class="icon-text">Profile</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="{{ asset('assets/js/alerts.js') }}"></script>
+
+        {% block body %}{% endblock %}
+    </body>
+</html>

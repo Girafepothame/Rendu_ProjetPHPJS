@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block body %}
+
+<div class="position-relative h-100 w-100 d-flex">
+    <div class="d-flex justify-content-center align-items-center w-100 h-100">
+        <div class="position-absolute w-100 h-100 profile-bg">
+            <img class="artwork w-100 h-100" src="/assets/artworks/prof-bg.webp" alt="">
+        </div>
+        <div class="h-75 w-50 p-4 text-white header-card holo-dark shadow-lg">
+            <span class="corner-border-top"></span>
+            <div class="h-100 w-100 d-flex flex-column justify-content-between">
+                <div class="w-100 h-25">
+                    <div class="text-center mb-5">
+                        <h1 class="mb-0">Welcome, {{ user.username }}</h1>
+                    </div>
+
+                    {% set role_label = 'User' %}
+                    {% set role_class = 'alert-info' %}
+
+                    {% if 'ROLE_ADMIN' in user.roles %}
+                        {% set role_label = 'Administrator' %}
+                        {% set role_class = 'alert-warning' %}
+                    {% endif %}
+
+                    <h4 class="text-start">
+                        <span class="{{ role_class }} p-3 rounded-pill">{{ role_label }}</span>
+                    </h4>
+                </div>
+
+                <div class="mt-4 w-100 h-75 d-flex flex-column justify-content-between" style="font-size: 2rem;">
+                    <div class="h-100 d-flex flex-column justify-content-around">
+                        <div class="d-flex justify-content-between w-100 gradient-border rounded">
+                            <div>
+                                <span class="fw-bold">Username:</span>
+                                <span class="ms-5 me-2">{{ user.username }}</span>
+                            </div>
+                            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#editUsernameModal">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="gradient-border rounded mb-3">
+                                <label class="fw-bold">Password:</label>
+                                <p class="mb-1">********</p>
+                            </div> 
+                            <button class="border-1 holo rounded p-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                Change password
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="ms-auto d-flex align-items-center">
+                        <form action="{{ path('app_logout') }}" method="POST">
+                            <button type="submit" class="alert-danger border-0 rounded p-3">Logout</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <span class="corner-border-bottom"></span>
+        </div>
+    </div>
+
+    <!-- Password update modal -->
+    <div class="modal holo-dark" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered w-100">
+            <div class="modal-content p-3 holo-dark header-card modal-fade-in">
+                <span class="corner-border-top"></span>
+                <div class="col-lg-12 text-center h1 mb-3 mt-1">CHANGER DE MOT DE PASSE</div>
+                <div class="col-lg-12 login-form">
+                    <form class="m-3" action="{{ path('app_change_password') }}" method="POST">
+                        <div class="form-group mb-5">
+                            <label class="form-control-label">ANCIEN MOT DE PASSE</label>
+                            <input name="old_password" type="password" class="w-100 rounded border-1 input-form holo">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-control-label">NOUVEAU MOT DE PASSE</label>
+                            <input name="new_password" type="password" class="w-100 rounded border-1 input-form holo">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-control-label">CONFIRMER MOT DE PASSE</label>
+                            <input name="confirm_password" type="password" class="w-100 rounded border-1 input-form holo">
+                        </div>
+                        <div class="col-lg-12 loginbttm">
+                            <div class="col-lg-6 login-btm login-text"></div>
+                            <div class="col-lg-6 login-btm login-button">
+                                <button type="submit" class="btn-submit">VALIDER</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <span class="corner-border-bottom"></span>
+            </div>
+        </div>
+    </div>
+    
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type }} alert-dismissible position-absolute w-20 m-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close text-light" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const changePasswordModal = document.getElementById("changePasswordModal");
+    let isClosing = false;
+
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener("hide.bs.modal", function (event) {
+            if (isClosing) return;
+
+            event.preventDefault(); // Prevent the modal from closing instantly
+            isClosing = true;
+
+            // Add fade-out animation class
+            changePasswordModal.classList.add("fade-out");
+
+            setTimeout(() => {
+                const modalInstance = bootstrap.Modal.getInstance(changePasswordModal);
+                modalInstance._backdrop._config.isAnimated = false; // Disable backdrop animation
+                modalInstance.hide(); // Hide the modal
+                changePasswordModal.classList.remove("fade-out"); // Remove fade-out animation class
+
+                isClosing = false;
+            }, 400); // Duration of the fade-out animation
+        });
+    }
+        
+    // Automatically close alerts after 3 seconds
+    setTimeout(function() {
+        document.querySelectorAll(".alert").forEach(alert => {
+            let bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 3000);
+});
+</script>
+
+{% endblock %}

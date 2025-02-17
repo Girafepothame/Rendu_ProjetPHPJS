@@ -1,0 +1,398 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}DataBase{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper {
+        margin: 1em auto;
+        max-width: 800px;
+        width: 95%;
+        font: 18px/1.5 sans-serif;
+    }
+
+    .example-wrapper code {
+        background: #F5F5F5;
+        padding: 2px 6px;
+    }
+</style>
+<div class="d-flex flex-grow-1 m-3 overflow-hidden">
+    <!-- Sidebar -->
+    <nav class="h-100 col-md-5 col-lg-4 d-md-block holo header-card holo">
+        <a class="bg-transparent position-absolute p-2 m-2" style="color: rgba(245, 176, 66, 0.75); border: 1px solid rgba(245, 176, 66, 0.75); border-radius: 0.25em;" href="/">Back</a>
+        <span class="corner-border-top"></span>
+        <div class="h-100 d-flex flex-column justify-content-between">
+            <div class="border-bottom">
+                <h1 class="text-center p-3">FACTIONS</h1>
+                <a class="text-decoration-none text-light h5 my-4 d-flex" data-bs-toggle="collapse" href="#search" role="button">
+                    <i class="fa-solid fa-caret-down mx-3"></i>
+                    <span>Search</span>
+                </a>
+                <div class="collapse" id="search">
+                    <input class="w-100 mb-3 rounded-pill border-0" type="text" name="" id="">
+                </div>
+            </div>
+            <div class="w-100 px-3 overflow-auto" style="scrollbar-width: none; -ms-overflow-style: none;">
+                <div>
+                    {% for faction in factions %}
+                    <div>
+                        <div>
+                            <a class="text-decoration-none d-flex align-items-center justify-content-between my-3 faction-cont"
+                                style="color: rgba(245, 176, 66, 0.75); border: 1px solid rgba(245, 176, 66, 0.75); border-radius: 0.25em;"
+                                data-bs-toggle="collapse" 
+                                href="#faction-{{ faction.id }}" 
+                                role="button">
+                                <div class="h-100 h2 my-4">
+                                    <span class="ms-3 x-icon" style="min-width: 50px !important">{{ faction.icon }}</span>
+                                    <span class="ms-5">{{ faction.name }}</span>
+                                </div>
+                                <i class="fa-solid fa-caret-down me-3"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="collapse" id="faction-{{ faction.id }}" >
+                        <div class="d-flex flex-column">
+                            {% for ship in ships %}
+                                {% if ship.faction.id == faction.id %}
+                                <a class="text-decoration-none text-light d-flex align-items-center justify-content-between my-1 ms-2"
+                                    style="border: 1px solid var(--main); border-radius: 0.15em;"
+                                    data-bs-toggle="collapse" 
+                                    href="#ship-{{ ship.id }}" 
+                                    role="button">
+                                    <div class="h-75 h4 d-flex justify-content-between align-items-center">
+                                        <span class="x-icon ms-4 me-5"> <img src="{{ ship.icon }}" alt="" style="width: 20%;"></span>
+                                        <span>{{ ship.name }}</span>
+                                    </div>
+                                    <i class="fa-solid fa-caret-down me-3"></i>
+                                </a>
+                                <div class="collapse" id="ship-{{ ship.id }}">
+                                    <div class="d-flex flex-column mb-3">
+                                        {% for pilot in pilots %}
+                                            {% if pilot.ship.id == ship.id %}
+                                            <a class="text-decoration-none d-flex text-light justify-content-between align-items-center my-1 ms-4 pilots" id="{{ pilot.id }}"
+                                                role="button">
+                                                <div class="h-100 d-flex justify-content-between align-items-center">
+                                                    <span class="ms-3 h-100 h4">{{ pilot.initiative }}</span>
+                                                    <span class="ms-5 h-100 h5">
+                                                        <div>
+                                                            {% if pilot.limited > 0 %} {% for i in 1..pilot.limited %} <span class="x-icon">u</span> {% endfor %} {% endif %}
+                                                            {{ pilot.name }} {% if pilot.caption != "" %} - <span class="fst-italic text-secondary"> {{ pilot.caption }} </span> {% endif %}
+                                                        </div>
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span class="me-5">{{ pilot.cost }} pts</span>
+                                                    <i class="fa-solid fa-caret-right me-3 ms-5"></i>
+                                                </div>
+                                            </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <hr class="ms-2 w-75">
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Danger Zone (import) -->
+            <div class="d-flex flex-column align-items-center w-100 mb-3 text-center">
+                <hr class="w-75">
+                <button class="btn btn-danger" id="importDataBtn">Import data from Json</button>
+            </div>
+        </div>
+        <span class="corner-border-bottom"></span>
+    </nav>
+
+    <!-- Pilot Information container -->
+    <div class="flex-grow-1 ms-3 holo header-card">
+        <span class="corner-border-top"></span>
+        <div id="shipInfo" class="w-100 d-flex flex-column h-100 d-none">
+            <div class="text-decoration-none d-flex text-light justify-content-between align-items-center mx-3 mt-3 gradient-border"
+                style="background: rgb(245,176,66); background: linear-gradient(45deg, rgba(245,176,66,0.35) 5%, rgba(245,176,66, 0) 15%); color: rgba(50, 50, 50, 1);">
+                <span id="initiative" class="ms-3 h1 my-0"></span>
+                <span class="ms-5 h-100">
+                    <div id="name" class="h3 my-0"></div>
+                    <div id="caption" class="fst-italic text-secondary h4 my-0"></div>
+                </span>
+                <span class="d-flex">
+                    <span id="cost" class="h4 ms-auto"></span>
+                    {# <span id="loadout"></span> #}
+                    <img id="shipIcon" class="ms-5 me-3" style="width: 20%;">
+                </span>
+            </div>
+            <div class="mx-3 mt-3 d-flex">
+                <div class="w-65 me-3 header-card">
+                    <span class="corner-border-top"></span>
+                    <img id="artwork" class="artwork w-100 h-100 object-fit-fill" src="" alt="" loading="lazy">
+                    <span class="corner-border-bottom"></span>
+                </div>
+                <div class="statsCont header-card w-50 holo">
+                    <span class="corner-border-top"></span>
+                    <div id="text" class="h-100 mx-5 py-3 text-center h4 d-flex flex-column justify-content-center"></div>
+                    <span class="corner-border-bottom"></span>
+                </div>
+            </div>
+
+            <div class="header-card mx-3 mt-3 holo">
+                <span class="corner-border-top"></span>
+                <div class="w-100 d-flex justify-content-between">
+                    <div id="stats" class="d-flex justify-content-between ms-3 w-50">
+                        
+                    </div>
+                    <div class="vr"></div>
+                    <div id="slots" class="d-flex me-3">
+
+                    </div>
+                </div>
+                <span class="corner-border-bottom"></span>
+            </div>
+
+            <div class="header-card m-3 holo h-100">
+                <span class="corner-border-top"></span>
+                <div class="d-flex justify-content-between w-100 h-100">
+                    <div class="d-flex h-100 align-items-center">
+                        <div class="maneuver-table h-75 border-end">
+                            {# <span class="corner-border-top"></span> #}
+                            <div class="grid-container me-3 h-100" id="maneuver-grid"></div>
+                            {# <span class="corner-border-bottom"></span> #}
+                        </div>
+                        <div class="d-flex flex-column">
+                            
+                        </div>
+                    </div>
+                </div>
+                <span class="corner-border-bottom"></span>
+            </div>
+
+            {# <img id="card" class="w-25 m-3" src="" alt=""> #}
+        </div>
+        <span class="corner-border-bottom"></span>
+    </div>
+</div>
+
+
+<script>
+
+document.getElementById('importDataBtn').addEventListener('click', function () {
+
+    // Import factions data
+    axios.get("{{ path('app_import_factions') }}")
+        .then(response => {
+            console.log('Factions imported:', response.data.message);
+        })
+        .catch(error => {
+            console.error('Error importing factions:', error);
+        })
+        .finally(() => {
+
+            // Import pilots data
+            axios.get("{{ path('app_import_pilots') }}")
+                .then(response => {
+                    console.log('Pilots imported:', response.data.message);
+                    if (!window.pilotsData) window.pilotsData = {{ pilots|json_encode|raw }};
+                    if (!window.shipsData) window.shipsData = {{ ships|json_encode|raw }};
+                    if (!window.actionsData) window.actionsData = {{ actions|json_encode|raw }};
+                    if (!window.statsData) window.statsData = {{ stats|json_encode|raw }};
+                })
+                .catch(error => {
+                    console.error('Error importing pilots:', error);
+                });
+
+                
+        });
+    
+});
+
+// Define icon mappings for various types
+window.iconMap = window.iconMap || {
+    "Front Arc": "{", "Full Front Arc": "~", "Rear Arc": "|", "Full Rear Arc": "¡", "Bullseye Arc": "}",
+    "Left Arc": "£", "Right Arc": "¢", "Single Turret Arc": "p", "Double Turret Arc": "q",
+    "Shields": "*", "Hull": "&", "Agility": "^", "Energy": "(",
+    "Hit": "d", "Critical Hit": "c", "Charge": "g", "Calculate": "a", "Focus": "f", "Evade": "e",
+    "Barrel Roll": "r", "Boost": "b", "Lock": "l", "Force": "h", "Coordinate": "o", "Reload": "=",
+    "Segnor's Loop Left": "1", "Segnor's Loop right": "3", "Turn Left": "4", "Stationary": "5", "Turn Right": "6",
+    "Bank Left": "7", "Straight": "8", "Bank Right": "9",
+    "Astromech": "A", "Cargo": "G", "Hardpoint": "H", "Modification": "m", "Sensor": "S", "Team": "T",
+    "Tech": "X", "Title": "t", "Crew": "W", "Device": "B", "Gunner": "Y", "Configuration": "n", "Turret": "U",
+    "Missile": "M", "Torpedo": "P", "Talent": "E", "Cannon": "C", "Illicit": "I", "Force Power": "F", "Command" : "V"
+};
+
+// Define maneuver mappings for various types
+window.maneuverMap = window.maneuverMap || {
+    "L": "1", "K": "2", "P": "3", "T": "4", "O": "5", "Y": "6", "B": "7", "F": "8", "N": "9",
+    "A": "J", "D": "L", "R": ":", "E": ";"
+};
+
+// Assign JSON data to global variables if not already assigned
+if (!window.pilotsData) window.pilotsData = {{ pilots|json_encode|raw }};
+if (!window.shipsData) window.shipsData = {{ ships|json_encode|raw }};
+if (!window.actionsData) window.actionsData = {{ actions|json_encode|raw }};
+if (!window.statsData) window.statsData = {{ stats|json_encode|raw }};
+
+// Get the icon for a given type
+function getIcon(type) {
+    return maneuverMap[type] || "?";
+}
+
+// Replace text within brackets with corresponding icons
+function replaceBracketsWithIcons(text) {
+    return text.replace(/\[([^\]]+)\]/g, (match, content) => iconMap[content] ? `<span class="x-icon">${iconMap[content]}</span>` : match);
+}
+
+// Parse maneuvers from a string
+function parseManeuvers(maneuversStr) {
+    if (!maneuversStr) return [];
+    return maneuversStr.split(',').map(maneuver => {
+        if (maneuver.length < 3) return null;
+        return { speed: maneuver[0], type: maneuver[1], difficulty: maneuver[2] };
+    }).filter(Boolean);
+}
+
+// Render actions for a ship
+function renderActions(actions) {
+    const actionsContainer = document.getElementById("actions");
+    if (!actionsContainer) return;
+    actionsContainer.innerHTML = "";
+    actions.forEach(action => {
+        const actionElement = document.createElement("span");
+        actionElement.classList.add("action-badge", "x-icon", "ms-2");
+        actionElement.textContent = iconMap[action.type] || "?";
+        actionsContainer.appendChild(actionElement);
+    });
+}
+
+// Render stats for a ship
+function renderStats(stats) {
+    const statsContainer = document.getElementById("stats");
+    if (!statsContainer) return;
+    statsContainer.innerHTML = "";
+    stats.forEach(stat => {
+        const statElement = document.createElement("span");
+        const colorMap = { "agility": "stat-agility", "hull": "stat-hull", "shields": "stat-shield", "attack": "stat-attack", "energy": "stat-energy" };
+        statElement.classList.add("stat-badge", "ms-2", colorMap[stat.type] || "text-secondary");
+
+        var icon = stat.type
+        if (icon === "attack") icon = stat.arc
+
+        icon = icon.charAt(0).toUpperCase() + icon.slice(1)
+
+        const statIcon = document.createElement("span");
+        statIcon.classList.add("x-icon");
+        statIcon.textContent = iconMap[icon] || "?";
+
+        const statValue = document.createElement("span");
+        statValue.textContent = stat.value;
+
+        statElement.appendChild(statIcon);
+        statElement.appendChild(statValue);
+        statsContainer.appendChild(statElement);
+    });
+}
+
+// Render the maneuver grid for a ship
+function renderManeuverGrid(maneuvers) {
+    let gridContainer = document.getElementById("maneuver-grid");
+    if (!gridContainer) return;
+    gridContainer.innerHTML = "";
+    let columnOrder = ["LRA", "T", "B", "FO", "N", "Y", "PKED"];
+    for (let speed = 5; speed >= 0; speed--) {
+        let row = document.createElement("div");
+        row.classList.add("grid-row", "h-50", "w-100");
+        let speedLabel = document.createElement("span");
+        speedLabel.textContent = speed;
+        speedLabel.classList.add("speed-label");
+        row.appendChild(speedLabel);
+        columnOrder.forEach(type => {
+            let cell = document.createElement("div");
+            cell.classList.add("grid-cell", "x-icon");
+            let maneuver = maneuvers.find(m => m.speed == speed && type.includes(m.type));
+            if (maneuver) {
+                cell.classList.add(`difficulty-${maneuver.difficulty}`, "bordered");
+                cell.innerHTML = getIcon(maneuver.type);
+            }
+            row.appendChild(cell);
+        });
+        gridContainer.appendChild(row);
+    }
+}
+
+// Add event listeners to pilot elements
+document.querySelectorAll(".pilots").forEach(pilotEl => {
+    pilotEl.addEventListener("click", function () {
+        document.querySelectorAll(".pilots").forEach(p => p.classList.remove("selected"));
+        
+        pilotEl.classList.add("selected");
+
+        // Get the ship information container element
+        let shipInfo = document.querySelector("#shipInfo");
+        if (!shipInfo) return;
+
+        // Show the ship information container
+        shipInfo.classList.remove("d-none");
+
+        let pilotId = pilotEl.id;
+        // Find the selected pilot data from the pilotsData array with its id
+        let selectedPilot = pilotsData.find(pilot => pilot.id == pilotId);
+        if (!selectedPilot) return;
+
+        // Find the ship data associated with the selected pilot
+        let pilotShip = shipsData.find(ship => ship.id == selectedPilot.ship.id);
+        if (!pilotShip) return;
+
+        // Parse and render the maneuver grid for the selected ship
+        let maneuvers = parseManeuvers(pilotShip.maneuvers);
+        renderManeuverGrid(maneuvers);
+
+        // Get the slots of the selected pilot and render them
+        let slots = selectedPilot.slots.split(",");
+        let slotsContainer = document.getElementById("slots");
+        if (slotsContainer) {
+            slotsContainer.innerHTML = "";
+            slots.forEach(slot => {
+                let slotElement = document.createElement("span");
+                slotElement.classList.add("slot-badge", "text-secondary", "x-icon", "ms-2");
+                slotElement.textContent = iconMap[slot] || "?";
+                slotsContainer.appendChild(slotElement);
+            });
+        }
+
+        // Filter and render the stats and actions for the selected ship
+        let stats = statsData.filter(s => s.ship && s.ship.id == pilotShip.id);
+        console.log(stats);
+        let actions = actionsData.filter(a => a.ship && a.ship.id == pilotShip.id);
+        renderActions(actions);
+        renderStats(stats);
+
+        // Update the text content of various elements with the selected pilot's data
+        let updateText = (selector, text) => {
+            let element = document.querySelector(selector);
+            if (element) element.innerText = text;
+        };
+
+        updateText("#initiative", selectedPilot.initiative);
+        updateText("#name", selectedPilot.name);
+        updateText("#caption", selectedPilot.caption);
+        updateText("#cost", `${selectedPilot.cost} pts`);
+
+        // Update the source of image elements with the selected pilot's data
+        let setSrc = (selector, src) => {
+            let element = document.querySelector(selector);
+            if (element) element.src = src;
+        };
+
+        setSrc("#shipIcon", pilotShip.icon);
+        setSrc("#artwork", selectedPilot.artwork);
+
+        // Update the text content of the ability or description of the selected pilot
+        let textElement = document.querySelector("#text");
+        if (textElement) {
+            textElement.innerHTML = selectedPilot.ability ? `<div>${replaceBracketsWithIcons(selectedPilot.ability)}</div>` : `<div class='fst-italic text-secondary'>${selectedPilot.text}</div>`;
+        }
+    });
+});
+</script>
+
+{% endblock %}

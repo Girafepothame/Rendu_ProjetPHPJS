@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Rebel Alliance",
+    "xws": "rebelalliance",
+    "icon": "!"
+  },
+  {
+    "name": "Galactic Empire",
+    "xws": "galacticempire",
+    "icon": "@"
+  },
+  {
+    "name": "Scum and Villainy",
+    "xws": "scumandvillainy",
+    "icon": "#"
+  }
+]
